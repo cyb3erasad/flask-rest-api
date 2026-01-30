@@ -77,7 +77,7 @@ def login():
     if not user or not user.check_password(password):
         return jsonify({"message": "Invalid credentials"}), 401
     
-    token = create_access_token(identity=user.id)
+    token = create_access_token(identity=str(user.id))
 
     return jsonify({
         "access_token": token,
@@ -94,7 +94,7 @@ def home():
 @jwt_required()
 def get_expenses():
     user_id = get_jwt_identity()
-    expenses = Expense.query.all()
+    expenses = Expense.query.filter_by(user_id=user_id).all()
 
     return jsonify([
         expense.to_dict() for expense in expenses
@@ -118,7 +118,7 @@ def post_expense():
     if not title or not amount:
         return jsonify({"error": "title and amount required"}), 400 
     
-    expense = Expense(title=title, amount=amount)
+    expense = Expense(title=title, amount=amount, user_id=int(user_id))
     db.session.add(expense)
     db.session.commit()
 
